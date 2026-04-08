@@ -24,10 +24,11 @@ body {
   max-width: 500px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
+  color: black;
   font-size: 24px;
   margin-bottom: 8px;
 }
