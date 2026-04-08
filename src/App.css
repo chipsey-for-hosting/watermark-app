@@ -4,13 +4,8 @@
   padding: 0;
 }
 
-html,
 body {
-  height: 100%;
   background: linear-gradient(135deg, #0f172a, #1e293b);
-}
-
-body {
   margin: 0;
   overflow-x: hidden;
   font-family: "Segoe UI", sans-serif;
@@ -18,8 +13,8 @@ body {
 }
 
 .app {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 110vh;
+  min-height: 110dvh;
   display: flex;
   align-items: center;
   justify-content: center;
