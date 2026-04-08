@@ -1,21 +1,22 @@
 import { useRef, useState, useEffect } from "react";
+import "./App.css";
 
 export default function App() {
   const canvasRef = useRef(null);
   const [image, setImage] = useState(null);
   const [watermarkImg, setWatermarkImg] = useState(null);
 
-  // Load watermark once
   useEffect(() => {
     const wm = new Image();
-    wm.src = "/watermark.png"; // place inside public folder
+    wm.src = "/watermark.png";
     wm.onload = () => setWatermarkImg(wm);
   }, []);
 
   const handleUpload = (e) => {
     const file = e.target.files[0];
-    const img = new Image();
+    if (!file) return;
 
+    const img = new Image();
     img.onload = () => {
       setImage(img);
       draw(img, watermarkImg);
@@ -33,25 +34,19 @@ export default function App() {
     canvas.width = img.width;
     canvas.height = img.height;
 
-    // Draw main image
     ctx.drawImage(img, 0, 0);
 
-    // Scale watermark (20% of image width)
-    const wmWidth = img.width * 0.2;
+    const wmWidth = Math.min(img.width, img.height) * 0.25;
     const scale = wmWidth / wm.width;
     const wmHeight = wm.height * scale;
 
     const padding = 20;
 
-    // Position bottom-right
     const x = canvas.width - wmWidth - padding;
     const y = canvas.height - wmHeight - padding;
 
-    // Optional: control transparency
-    ctx.globalAlpha = 0.6;
-
+    ctx.globalAlpha = 0.7;
     ctx.drawImage(wm, x, y, wmWidth, wmHeight);
-
     ctx.globalAlpha = 1;
   };
 
@@ -59,12 +54,11 @@ export default function App() {
     const canvas = canvasRef.current;
     const link = document.createElement("a");
 
-    link.download = "watermarked.png";
+    link.download = "dfn-aurudu-2026.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
 
-  // Redraw if watermark loads after image
   useEffect(() => {
     if (image && watermarkImg) {
       draw(image, watermarkImg);
@@ -72,23 +66,24 @@ export default function App() {
   }, [watermarkImg]);
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h2>PNG Watermark Tool</h2>
+    <div className="app">
+      <div className="card">
+        <h1>🎉 DFN AURUDU 2026</h1>
+        <p className="subtitle">Add your festive watermark instantly</p>
 
-      <input type="file" accept="image/*" onChange={handleUpload} />
+        <label className="upload-box">
+          <input type="file" accept="image/*" onChange={handleUpload} />
+          <span>📸 Upload Image</span>
+        </label>
 
-      <br />
-      <br />
+        <button className="download-btn" onClick={downloadImage}>
+          ⬇ Download Image
+        </button>
 
-      <button onClick={downloadImage}>Download Image</button>
-
-      <br />
-      <br />
-
-      <canvas
-        ref={canvasRef}
-        style={{ maxWidth: "100%", border: "1px solid #ccc" }}
-      />
+        <div className="canvas-wrapper">
+          <canvas ref={canvasRef} />
+        </div>
+      </div>
     </div>
   );
 }
