@@ -42,16 +42,17 @@ export default function App() {
 
     ctx.drawImage(img, 0, 0);
 
-    const wmWidth = Math.min(img.width, img.height) * 0.25;
+    const wmWidth = Math.min(img.width, img.height) * 0.2;
     const scale = wmWidth / wm.width;
     const wmHeight = wm.height * scale;
 
     const padding = 20;
 
-    const x = canvas.width - wmWidth - padding;
+    // const x = canvas.width - wmWidth - padding;
+    const x = canvas.width / 2 - wmWidth / 2;
     const y = canvas.height - wmHeight - padding;
 
-    ctx.globalAlpha = 0.7;
+    ctx.globalAlpha = 0.9;
     ctx.drawImage(wm, x, y, wmWidth, wmHeight);
     ctx.globalAlpha = 1;
   };
@@ -149,15 +150,15 @@ export default function App() {
   return (
     <div className="app">
       <div className="card">
-        <h1>🎉 DFN AURUDU 2026</h1>
-        <p className="subtitle">Add your festive watermark instantly</p>
-
+        <div className="header">
+          <img src="/watermark.png" alt="DFN Aurudu 2026" className="logo" />
+          <p className="subtitle">Add your festive watermark instantly</p>
+        </div>
         {/* Upload */}
         <label className="upload-box">
           <input type="file" accept="image/*" onChange={handleUpload} />
           <span>📸 Upload Image</span>
         </label>
-
         {/* Buttons */}
         <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
           <button
@@ -176,7 +177,6 @@ export default function App() {
             {uploading ? "Uploading..." : "Upload"}
           </button>
         </div>
-
         {/* Uploaded URL */}
         {uploadedUrl && (
           <div className="share-section">
@@ -204,7 +204,6 @@ export default function App() {
             </div>
           </div>
         )}
-
         {/* Canvas */}
         <div className="canvas-wrapper">
           <canvas ref={canvasRef} />
