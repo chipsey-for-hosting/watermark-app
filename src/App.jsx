@@ -6,12 +6,17 @@ export default function App() {
   const [image, setImage] = useState(null);
   const [watermarkImg, setWatermarkImg] = useState(null);
 
+  const [uploading, setUploading] = useState(false);
+  const [uploadedUrl, setUploadedUrl] = useState("");
+
+  // Load watermark
   useEffect(() => {
     const wm = new Image();
     wm.src = "/watermark.png";
     wm.onload = () => setWatermarkImg(wm);
   }, []);
 
+  // Handle image upload
   const handleUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -25,6 +30,7 @@ export default function App() {
     img.src = URL.createObjectURL(file);
   };
 
+  // Draw image + watermark
   const draw = (img, wm) => {
     if (!img || !wm) return;
 
@@ -50,6 +56,7 @@ export default function App() {
     ctx.globalAlpha = 1;
   };
 
+  // Download only
   const downloadImage = () => {
     const canvas = canvasRef.current;
     const link = document.createElement("a");
@@ -59,6 +66,80 @@ export default function App() {
     link.click();
   };
 
+  // Upload to Cloudinary
+  const uploadToCloudinary = async (blob) => {
+    const formData = new FormData();
+    formData.append("file", blob);
+    formData.append("upload_preset", "dfn_aurudu_upload");
+
+    const response = await fetch(
+      "https://api.cloudinary.com/v1_1/djd170bwz/image/upload",
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error(data);
+      throw new Error("Upload failed");
+    }
+
+    return data.secure_url;
+  };
+
+  const shareOnWhatsApp = () => {
+    if (!uploadedUrl) return;
+
+    const message = `🌞 *DFN අවුරුදු 2026*
+
+    සුභ අලුත් අවුරුද්දක් වේවා! 🌸
+    ඔබට සහ ඔබගේ පවුලට සතුට, සෞභාග්‍යය හා සාර්ථකත්වයෙන් පිරි වසරක් වේවා!
+
+    🔗 ${uploadedUrl}`;
+
+    const encoded = encodeURIComponent(message);
+    const url = `https://wa.me/?text=${encoded}`;
+    window.open(url, "_blank");
+  };
+
+  // Upload only
+  const uploadImage = () => {
+    const canvas = canvasRef.current;
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      setUploading(true);
+      setUploadedUrl("");
+
+      try {
+        const url = await uploadToCloudinary(blob);
+        setUploadedUrl(url);
+      } catch (err) {
+        alert("Upload failed. Check console.");
+      } finally {
+        setUploading(false);
+      }
+    });
+  };
+
+  const showToast = (message) => {
+    const existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.innerText = message;
+    toast.className = "toast";
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 2000);
+  };
+
+  // Redraw when watermark loads
   useEffect(() => {
     if (image && watermarkImg) {
       draw(image, watermarkImg);
@@ -71,15 +152,60 @@ export default function App() {
         <h1>🎉 DFN AURUDU 2026</h1>
         <p className="subtitle">Add your festive watermark instantly</p>
 
+        {/* Upload */}
         <label className="upload-box">
           <input type="file" accept="image/*" onChange={handleUpload} />
           <span>📸 Upload Image</span>
         </label>
 
-        <button className="download-btn" onClick={downloadImage}>
-          ⬇ Download Image
-        </button>
+        {/* Buttons */}
+        <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+          <button
+            className="download-btn"
+            onClick={downloadImage}
+            disabled={!image}
+          >
+            Download
+          </button>
 
+          <button
+            className="download-btn"
+            onClick={uploadImage}
+            disabled={!image || uploading}
+          >
+            {uploading ? "Uploading..." : "Upload"}
+          </button>
+        </div>
+
+        {/* Uploaded URL */}
+        {uploadedUrl && (
+          <div className="share-section">
+            <p className="success-text">✅ Uploaded Successfully</p>
+
+            <input value={uploadedUrl} readOnly className="url-input" />
+
+            <div className="action-buttons">
+              <button
+                className="big-btn copy-btn"
+                onClick={() => {
+                  navigator.clipboard.writeText(uploadedUrl);
+                  showToast("Link Copied!");
+                }}
+              >
+                Copy Link
+              </button>
+
+              <button
+                className="big-btn whatsapp-btn"
+                onClick={shareOnWhatsApp}
+              >
+                Share on WhatsApp
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Canvas */}
         <div className="canvas-wrapper">
           <canvas ref={canvasRef} />
         </div>
